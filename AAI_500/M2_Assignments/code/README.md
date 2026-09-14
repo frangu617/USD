@@ -13,6 +13,9 @@ The app uses Python's standard library (Tkinter); no pip packages are needed.
 - Set **Chance of rain (%)** from 0 to 100.
 - Set **Range: number of days** from 1 to 1,000,000, or select a preset.
 - Click **Simulate**. Each run uses fresh randomness. Enter an optional integer seed to reproduce a run.
+- Set **Number of runs** (1 to 100,000), or use the **1, 10, 100, 1000 runs** buttons, then click **Simulate** to run a batch. Day presets include **1** and **10** days.
+- The progress bar tracks the entire batch. Estimated time remaining appears after a short measurement period and updates using elapsed time and simulated days; it is approximate. **Stop** cancels remaining work and keeps completed runs in the history and statistics. The current partial run stays on the graph and milestone table but is excluded from history statistics.
+- Inputs are locked during a batch. The graph and milestone table show the current/latest run. A supplied seed reproduces the batch, using that seed for the first run and increasing it by one for each subsequent run.
 - Compare the blue cumulative rain proportion with the orange chosen probability. Toggle the logarithmic day axis to change the graph scale.
 - See the first 28 daily outcomes and a table at textbook milestones. All milestones belong to the same simulation.
 - **Run history** keeps one result per completed run while the number of days stays the same. It shows the run number, days, rainy days, observed percentage, and chosen chance. Changing the chance preserves the log; changing to a different valid number of days clears it immediately. The log lasts until you close the app. Partial stopped runs are not added to the log.

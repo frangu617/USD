@@ -2,6 +2,7 @@
 
 import math
 import random
+import time
 import tkinter as tk
 from tkinter import messagebox, ttk
 
@@ -20,8 +21,8 @@ class RainApp:
     def __init__(self, root):
         self.root = root
         root.title("Rain probability lab")
-        root.geometry("1100x900")
-        root.minsize(900, 820)
+        root.geometry("1100x980")
+        root.minsize(950, 900)
         self.points = []
         self.target = 0.2
         self.days = 7
@@ -32,6 +33,8 @@ class RainApp:
         self.range_controls = []
         self.probability = tk.StringVar(value="20")
         self.day_count = tk.StringVar(value="7")
+        self.run_count = tk.StringVar(value="1")
+        self.batch_status = tk.StringVar(value="Choose how many runs to simulate.")
         self.seed = tk.StringVar()
         self.status = tk.StringVar(value="Choose a chance and simulation range, then click Simulate.")
         self.log_scale = tk.BooleanVar(value=True)
@@ -50,8 +53,7 @@ class RainApp:
             ttk.Label(controls, text=label).grid(row=0, column=column, sticky="w", padx=(0, 18))
             entry = ttk.Entry(controls, textvariable=variable, width=width)
             entry.grid(row=1, column=column, sticky="w", padx=(0, 18))
-            if variable is self.day_count:
-                self.range_controls.append(entry)
+            self.range_controls.append(entry)
         self.run_button = ttk.Button(controls, text="Simulate", command=self.start)
         self.run_button.grid(row=1, column=3, padx=6)
         self.stop_button = ttk.Button(controls, text="Stop", command=self.stop, state="disabled")
@@ -60,10 +62,23 @@ class RainApp:
         presets = ttk.Frame(frame)
         presets.pack(fill="x", pady=12)
         ttk.Label(presets, text="Try a range:").pack(side="left")
-        for count in (7, 100, 1000, 10000, 100000, 1000000):
+        for count in (1, 7, 10, 100, 1000, 10000, 100000, 1000000):
             button = ttk.Button(presets, text=f"{count:,}", command=lambda n=count: self.day_count.set(str(n)))
             button.pack(side="left", padx=3)
             self.range_controls.append(button)
+        batches = ttk.Frame(frame)
+        batches.pack(fill="x", pady=(0, 8))
+        ttk.Label(batches, text="Number of runs:").pack(side="left")
+        run_entry = ttk.Entry(batches, textvariable=self.run_count, width=12)
+        run_entry.pack(side="left", padx=8)
+        self.range_controls.append(run_entry)
+        for count in (1, 10, 100, 1000):
+            button = ttk.Button(batches, text=f"{count:,} runs", command=lambda n=count: self.run_count.set(str(n)))
+            button.pack(side="left", padx=3)
+            self.range_controls.append(button)
+        ttk.Label(frame, textvariable=self.batch_status).pack(anchor="w")
+        self.progress = ttk.Progressbar(frame, maximum=100)
+        self.progress.pack(fill="x", pady=(4, 8))
         ttk.Label(frame, textvariable=self.status, font=("Segoe UI", 11), wraplength=900).pack(anchor="w", pady=(0, 8))
         ttk.Checkbutton(frame, text="Logarithmic day axis (makes early fluctuations easier to see)", variable=self.log_scale, command=self.draw).pack(anchor="w")
         self.canvas = tk.Canvas(frame, background="#f8fafc", height=280, highlightthickness=0)
@@ -148,27 +163,64 @@ class RainApp:
             probability = float(self.probability.get()) / 100
             days = int(self.day_count.get().replace(",", ""))
             seed = int(self.seed.get()) if self.seed.get().strip() else None
+            runs = int(self.run_count.get().replace(",", ""))
             if not math.isfinite(probability) or not 0 <= probability <= 1:
                 raise ValueError("Chance must be between 0 and 100 percent.")
             if not 1 <= days <= 1000000:
                 raise ValueError("Choose between 1 and 1,000,000 days.")
+            if not 1 <= runs <= 100000:
+                raise ValueError("Choose between 1 and 100,000 runs.")
         except ValueError as error:
-            messagebox.showerror("Check your inputs", f"{error}\nUse a numeric chance, a whole number of days, and an optional integer seed.")
+            messagebox.showerror("Check your inputs", f"{error}\nUse a numeric chance, whole numbers of days and runs, and an optional integer seed.")
             return
         self.target, self.days = probability, days
-        self.points, self.first_days = [], []
-        self.table.delete(*self.table.get_children())
+        self.batch_runs, self.batch_finished = runs, 0
+        self.batch_seed = seed
+        self.batch_started = time.perf_counter()
         self.checkpoints = {n for n in (7, 100, 1000, 10000, 100000, 1000000, days) if n <= days}
         # Sample logarithmically for plotting; every trial still contributes to totals.
         self.plot_days = {1, days} | {round(math.exp(i * math.log(days) / 1200)) for i in range(1201)}
-        self.trials = simulate(probability, days, seed)
-        self.completed = self.total = 0
+        self.prepare_run()
         self.running = True
         for control in self.range_controls:
             control.configure(state="disabled")
         self.run_button.configure(state="disabled")
         self.stop_button.configure(state="normal")
+        self.update_batch_status()
         self.step()
+
+    def prepare_run(self):
+        self.points, self.first_days = [], []
+        self.table.delete(*self.table.get_children())
+        # Distinct seeds give distinct streams while reproducing the whole batch.
+        seed = None if self.batch_seed is None else self.batch_seed + self.batch_finished
+        self.trials = simulate(self.target, self.days, seed)
+        self.completed = self.total = 0
+        self.run_logged = False
+
+    @staticmethod
+    def duration(seconds):
+        seconds = max(0, math.ceil(seconds))
+        hours, rest = divmod(seconds, 3600)
+        minutes, seconds = divmod(rest, 60)
+        if hours:
+            return f"{hours}h {minutes}m {seconds}s"
+        return f"{minutes}m {seconds}s" if minutes else f"{seconds}s"
+
+    def update_batch_status(self, stopped=False):
+        done = self.batch_finished * self.days + (0 if self.run_logged else self.completed)
+        total = self.batch_runs * self.days
+        elapsed = time.perf_counter() - self.batch_started
+        self.progress["value"] = 100 * done / total
+        if stopped:
+            timing = f"Stopped after {self.duration(elapsed)}; completed runs kept."
+        elif self.batch_finished == self.batch_runs:
+            timing = f"Complete in {self.duration(elapsed)}."
+        elif elapsed < 0.25 or not done:
+            timing = "Estimating time remaining..."
+        else:
+            timing = f"Estimated time remaining: {self.duration(elapsed * (total - done) / done)}"
+        self.batch_status.set(f"Batch: {self.batch_finished:,} / {self.batch_runs:,} runs complete | {100 * done / total:.1f}% | {timing}")
 
     def add_row(self, day, total):
         self.table.insert("", "end", values=(f"{day:,}", f"{total:,}", f"{100 * total / day:.4f}%", f"{100 * self.target:g}%"))
@@ -177,6 +229,8 @@ class RainApp:
         self.pending_step = None
         if not self.running:
             return
+        if self.run_logged:
+            self.prepare_run()
         for _ in range(10000):
             trial = next(self.trials, None)
             if trial is None:
@@ -191,6 +245,7 @@ class RainApp:
             if day in self.checkpoints:
                 self.add_row(day, total)
         self.update_status("Simulating")
+        self.update_batch_status()
         self.draw()
         self.draw_days()
         self.pending_step = self.root.after(1, self.step)
@@ -204,12 +259,7 @@ class RainApp:
         if self.pending_step is not None:
             self.root.after_cancel(self.pending_step)
             self.pending_step = None
-        self.running = False
-        for control in self.range_controls:
-            control.configure(state="normal")
-        self.run_button.configure(state="normal")
-        self.stop_button.configure(state="disabled")
-        if self.completed:
+        if self.completed and not self.run_logged:
             if self.points[-1][0] != self.completed:
                 self.points.append((self.completed, self.total / self.completed))
             if self.completed not in self.checkpoints:
@@ -224,8 +274,19 @@ class RainApp:
                 self.history.see(row)
                 self.history_totals.append(self.total)
                 self.update_summary()
+                self.run_logged = True
+                self.batch_finished += 1
+        self.update_batch_status(stopped=stopped)
         self.draw()
         self.draw_days()
+        if not stopped and self.batch_finished < self.batch_runs:
+            self.pending_step = self.root.after(1, self.step)
+            return
+        self.running = False
+        for control in self.range_controls:
+            control.configure(state="normal")
+        self.run_button.configure(state="normal")
+        self.stop_button.configure(state="disabled")
 
     def stop(self):
         if self.running:
