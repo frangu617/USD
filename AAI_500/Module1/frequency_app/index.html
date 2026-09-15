@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Frequency Lab</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#172b46;font:16px system-ui,sans-serif}main{max-width:1100px;margin:40px auto;padding:0 20px}h1{margin-bottom:6px}p{color:#53647a;line-height:1.5}.panel{background:white;border:1px solid #dbe3ef;border-radius:14px;padding:24px;margin:20px 0}textarea{width:100%;min-height:125px;resize:vertical;font:16px monospace;padding:12px;border:1px solid #acbbcd;border-radius:8px;margin:8px 0 16px}button{background:#215ec6;color:white;border:0;padding:11px 18px;border-radius:8px;cursor:pointer;font:inherit}button.secondary{background:#e8eef9;color:#184991}button:disabled{opacity:.5;cursor:default}input,select{font:inherit;padding:8px;max-width:100%}input[type=number]{width:100px}.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.card{background:#edf3fe;padding:18px;border-radius:10px}.card strong{display:block;font-size:24px;margin-top:8px;overflow-wrap:anywhere}.card span{font-size:14px}table{border-collapse:collapse;width:100%;text-align:right}th,td{padding:12px;border-bottom:1px solid #e1e7f0}th:first-child,td:first-child{text-align:left}.scroll{overflow-x:auto}#error{color:#a12020;font-weight:600}svg{width:100%;min-width:550px;height:auto}label{font-weight:500}#csvArea{margin-top:14px}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #e39b16;outline-offset:3px}
+</style>
+<main>
+<h1>Frequency Lab</h1><p>Explore your data with a frequency distribution, histogram, and descriptive statistics.</p>
+<section class="panel"><label for="data">Your data</label><textarea id="data" placeholder="Paste numbers or labeled data, e.g. Nation CO2 Albania 2.0 Australia 15.4 Austria 6.9" spellcheck="false"></textarea>
+<div class="controls"><label for="bins">Bins</label><input id="bins" type="number" min="1" max="100" placeholder="Auto"><button id="analyze">Analyze data</button><button class="secondary" id="tableData">Table data</button><button class="secondary" id="example">Load example</button></div>
+<p>Paste a list of numbers or labels followed by values, such as <code>Nation CO2 Albania 2.0 Australia 15.4</code>. Spaces, tabs, commas, semicolons, and new lines are supported; names can contain spaces. Headers and labels are excluded. You can also paste a table such as income education race 16 10 B 18 7 B: click Analyze data, then choose a numeric column and optional group filter. Use single-word headers and NA for missing cells. Flattened tables must start each row with two numeric columns. For other layouts, import a CSV and select a column. Use a decimal point; omit thousands separators. Automatic bins use Sturges’ rule, capped at 100. Bin widths round up to clean increments (such as 0.5, 1, 2, 2.5, or 5); the axis may extend beyond the data.</p>
+<hr><div class="controls"><label for="file">Import CSV</label><input type="file" id="file" accept=".csv,.tsv,text/csv"><label><input type="checkbox" id="header" checked> First row is a header</label></div>
+<div id="csvArea" hidden><label for="column">Column </label><select id="column"></select><p id="csvNote"></p></div>
+<div id="tableArea" hidden><h3>Pasted table</h3><div class="controls"><label for="tableColumn">Analyze column</label><select id="tableColumn"></select><label for="filterColumn">Filter by</label><select id="filterColumn"></select><label for="filterValue">Group</label><select id="filterValue"></select></div><p id="tableNote"></p><fieldset><legend>Side-by-side comparison</legend><p>Choose a “Filter by” column above (such as race), then select groups below. Comparison uses these groups, independently of the single-group filter.</p><div id="compareGroups" class="controls"></div><button id="compare" class="secondary">Compare selected groups</button></fieldset><details><summary>Preview first 10 rows</summary><div class="scroll"><table id="tablePreview"></table></div></details></div><p id="error" role="alert"></p></section>
+<div id="results" hidden aria-live="polite"><p>Save any chart as SVG for a compact, scalable image, or PNG for compatibility with documents. Exports have a white background.</p><p id="exportStatus" role="status"></p><p id="inputNote"></p><details><summary>Extracted values used in calculations</summary><p id="values"></p></details><div id="cards" class="cards"></div>
+<section id="comparison" class="panel" hidden><h2 id="comparisonTitle">Group comparison</h2><p>Matching bins and axis scales across groups. Histograms and curves use percentages to account for different group sizes. Hover over bars for counts. Box plots use the same value scale.</p><div class="scroll"><table id="comparisonStats"></table></div><h3>Histograms side by side</h3><div class="controls"><button class="secondary" data-chart="compareHistogram" data-format="svg">Save SVG (compact)</button><button class="secondary" data-chart="compareHistogram" data-format="png">Save PNG</button></div><div class="scroll"><svg id="compareHistogram" viewBox="0 0 960 360" role="img" aria-label="Histograms side by side"></svg></div><h3>Frequency curves side by side</h3><div class="controls"><button class="secondary" data-chart="compareCurve" data-format="svg">Save SVG (compact)</button><button class="secondary" data-chart="compareCurve" data-format="png">Save PNG</button></div><div class="scroll"><svg id="compareCurve" viewBox="0 0 960 360" role="img" aria-label="Frequency curves side by side"></svg></div><h3>Box plots side by side</h3><div class="controls"><button class="secondary" data-chart="compareBox" data-format="svg">Save SVG (compact)</button><button class="secondary" data-chart="compareBox" data-format="png">Save PNG</button></div><div class="scroll"><svg id="compareBox" viewBox="0 0 960 360" role="img" aria-label="Box plots side by side"></svg></div></section><section class="panel"><div class="controls"><h2>Histogram</h2><button class="secondary" data-chart="chart" data-format="svg" aria-label="Download histogram as SVG">Save SVG (compact)</button><button class="secondary" data-chart="chart" data-format="png" aria-label="Download histogram as PNG">Save PNG</button></div><div class="scroll"><svg id="chart" viewBox="0 0 960 360" role="img" aria-label="Histogram of the entered data"></svg></div><p id="chartNote"></p></section>
+<section class="panel"><div class="controls"><h2>Frequency curve</h2><button class="secondary" data-chart="curve" data-format="svg" aria-label="Download frequency curve as SVG">Save SVG (compact)</button><button class="secondary" data-chart="curve" data-format="png" aria-label="Download frequency curve as PNG">Save PNG</button></div><div class="scroll"><svg id="curve" viewBox="0 0 960 360" role="img" aria-label="Frequency polygon connecting histogram bin midpoints"></svg></div><p>This frequency polygon connects the counts at each bin midpoint. It shows the observed distribution, rather than assuming a bell-shaped normal distribution. Changing the bins changes this curve.</p></section>
+<section class="panel"><h2>Five-number summary</h2><div id="fiveNumbers" class="cards"></div><p>Q1 and Q3 are the medians of the lower and upper halves of the sorted data, excluding the overall median when the count is odd. For a single value, all five numbers equal that value.</p><div class="controls"><h2>Box plot</h2><button class="secondary" data-chart="boxplot" data-format="svg" aria-label="Download box plot as SVG">Save SVG (compact)</button><button class="secondary" data-chart="boxplot" data-format="png" aria-label="Download box plot as PNG">Save PNG</button></div><div class="scroll"><svg id="boxplot" viewBox="0 0 960 240" role="img" aria-label="Box plot showing quartiles, median, whiskers, and outliers"></svg></div><p id="boxNote"></p><p>The box spans Q1 to Q3; its center line marks the median. Whiskers reach the most extreme observations within 1.5 × IQR of the box. Circles mark outliers, so whiskers may differ from the minimum and maximum.</p></section>
+<section class="panel"><div class="controls"><h2>Frequency distribution</h2><button class="secondary" id="download">Download table CSV</button></div><p>Intervals include the lower bound and exclude the upper bound, except the final interval which includes both.</p><div class="scroll"><table><thead><tr><th scope="col">Interval</th><th scope="col">Frequency</th><th scope="col">Relative frequency</th><th scope="col">Cumulative frequency</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<p>Statistics use the original values. Sample standard deviation divides by n − 1; population standard deviation divides by n. Sample standard deviation needs at least two values.</p></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);let current=null,columns=[],pastedTable=null;
+const fmt=n=>n===null?'N/A':Number(n.toPrecision(8)).toLocaleString('en-US',{maximumSignificantDigits:8});
+const interval=r=>r.lower===r.upper?fmt(r.lower):`[${fmt(r.lower)}, ${fmt(r.upper)}${r.closed_right?']':')'}`;
+async function api(path,payload){const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json();if(!response.ok)throw Error(data.error||'Unable to process data.');return data;}
+function invalidate(){$('comparison').hidden=true;$('results').hidden=true;current=null;$('error').textContent='';}
+function svg(tag,attrs,text){const node=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))node.setAttribute(k,v);if(text!==undefined)node.textContent=text;$('chart').append(node);return node;}
+function render(data){current=data;$('inputNote').textContent=data.input_note;$('values').textContent=data.values.join(', ');$('cards').replaceChildren();for(const [label,value]of [['Count',data.n],['Mean',data.mean],['Median',data.median],['Sample std. deviation',data.sample_sd],['Population std. deviation',data.population_sd],['Minimum',data.minimum],['Maximum',data.maximum]]){const card=document.createElement('div');card.className='card';const name=document.createElement('span');name.textContent=label;const number=document.createElement('strong');number.textContent=fmt(value);number.title=value===null?'Requires at least two values':String(value);card.append(name,number);$('cards').append(card);}
+$('rows').replaceChildren();for(const row of data.rows){const tr=document.createElement('tr');for(const value of [interval(row),row.frequency,(row.relative*100).toFixed(2)+'%',row.cumulative]){const td=document.createElement('td');td.textContent=value;tr.append(td);}$('rows').append(tr);}
+$('chart').replaceChildren();const left=75,top=20,width=850,height=270,max=Math.max(...data.rows.map(r=>r.frequency)),bar=width/data.rows.length;
+const rough=Math.max(1,max/5),power=10**Math.floor(Math.log10(rough)),tick=[1,2,5,10].map(n=>n*power).find(n=>n>=rough),yMax=Math.ceil(max/tick)*tick;
+for(let value=0;value<=yMax;value+=tick){const y=top+height-height*value/yMax;svg('line',{x1:left,y1:y,x2:left+width,y2:y,stroke:'#dce4ef'});svg('text',{x:left-12,y:y+5,'text-anchor':'end',fill:'#53647a','font-size':13},fmt(value));}
+data.rows.forEach((r,i)=>{const h=r.frequency/yMax*height;const rect=svg('rect',{x:left+i*bar,y:top+height-h,width:bar,height:h,fill:'#3373cf',stroke:'white','stroke-width':.8});const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`${interval(r)}: ${r.frequency}`;rect.append(title);});
+const stride=Math.max(1,Math.ceil(data.rows.length/8));for(let index=0;index<=data.rows.length;index+=stride){const value=index===data.rows.length?data.rows.at(-1).upper:data.rows[index].lower;svg('text',{x:left+index*bar,y:315,'text-anchor':index===0?'start':index===data.rows.length?'end':'middle',fill:'#53647a','font-size':12},fmt(value));}
+svg('text',{x:500,y:348,'text-anchor':'middle',fill:'#172b46'},'Value');svg('text',{x:20,y:155,transform:'rotate(-90 20 155)','text-anchor':'middle',fill:'#172b46'},'Frequency');$('chartNote').textContent=data.minimum===data.maximum?'All observations are equal; one bar represents that value.':'Hover over a bar for its exact interval and count. The table below provides the same data.';renderExtras(data);$('results').hidden=false;}
+function draw(target,tag,attrs,text){const node=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value] of Object.entries(attrs))node.setAttribute(key,value);if(text!==undefined)node.textContent=text;$(target).append(node);return node;}
+function renderExtras(data){
+  // Reuse the histogram axes so both views have identical scales.
+  $('curve').replaceChildren();
+  for(const node of $('chart').children)if(node.tagName!=='rect')$('curve').append(node.cloneNode(true));
+  const peak=Math.max(...data.rows.map(r=>r.frequency));
+  const rough=Math.max(1,peak/5),power=10**Math.floor(Math.log10(rough));
+  const tick=[1,2,5,10].map(n=>n*power).find(n=>n>=rough),top=Math.ceil(peak/tick)*tick;
+  const points=data.rows.map((r,i)=>[75+(i+.5)*850/data.rows.length,290-r.frequency/top*270]);
+  draw('curve','polyline',{points:points.map(p=>p.join(',')).join(' '),fill:'none',stroke:'#16806a','stroke-width':3});
+  points.forEach(([x,y],i)=>{const dot=draw('curve','circle',{cx:x,cy:y,r:4,fill:'#16806a'});const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`${interval(data.rows[i])}: ${data.rows[i].frequency}`;dot.append(title);});
+  const b=data.box;
+  $('fiveNumbers').replaceChildren();
+  for(const [label,value] of [['Minimum',b.minimum],['Q1',b.q1],['Median',b.median],['Q3',b.q3],['Maximum',b.maximum]]){
+    const card=document.createElement('div');card.className='card';
+    const name=document.createElement('span');name.textContent=label;
+    const number=document.createElement('strong');number.textContent=fmt(value);number.title=String(value);
+    card.append(name,number);$('fiveNumbers').append(card);
+  }
+  $('boxplot').replaceChildren();
+  const lo=data.rows[0].lower,hi=data.rows.at(-1).upper;
+  const x=value=>hi===lo?500:75+((value-lo)/(hi-lo))*850;
+  const line=(x1,y1,x2,y2,color='#172b46',width=2)=>draw('boxplot','line',{x1,y1,x2,y2,stroke:color,'stroke-width':width});
+  line(75,175,925,175,'#acbbcd',1);
+  if(lo===hi){draw('boxplot','text',{x:500,y:198,'text-anchor':'middle',fill:'#53647a'},fmt(lo));}
+  else{const stride=Math.max(1,Math.ceil(data.rows.length/8));for(let i=0;i<=data.rows.length;i+=stride){const value=i===data.rows.length?hi:data.rows[i].lower;line(x(value),175,x(value),181,'#acbbcd',1);draw('boxplot','text',{x:x(value),y:198,'text-anchor':i===0?'start':i===data.rows.length?'end':'middle',fill:'#53647a','font-size':12},fmt(value));}}
+  line(x(b.lower_whisker),95,x(b.upper_whisker),95);
+  for(const value of [b.lower_whisker,b.upper_whisker])line(x(value),75,x(value),115);
+  draw('boxplot','rect',{x:x(b.q1),y:60,width:Math.max(0,x(b.q3)-x(b.q1)),height:70,fill:'#dce9ff',stroke:'#215ec6','stroke-width':2});
+  line(x(b.median),60,x(b.median),130,'#215ec6',3);
+  // Repeated outliers share a marker, with their multiplicity in its tooltip.
+  const counts=new Map();for(const value of b.outliers)counts.set(value,(counts.get(value)||0)+1);
+  for(const [value,count] of counts){const dot=draw('boxplot','circle',{cx:x(value),cy:95,r:5,fill:'white',stroke:'#b34526','stroke-width':2});const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`Outlier: ${fmt(value)} (${count} observation${count===1?'':'s'})`;dot.append(title);}
+  draw('boxplot','text',{x:500,y:228,'text-anchor':'middle',fill:'#172b46'},'Value');
+  $('boxNote').textContent=`IQR: ${fmt(b.iqr)} · Lower whisker: ${fmt(b.lower_whisker)} · Upper whisker: ${fmt(b.upper_whisker)} · Outliers: ${b.outliers.length ? b.outliers.map(fmt).join(', ') : 'None'}`;
+}
+function clearTable(){pastedTable=null;$('tableArea').hidden=true;}
+function option(select,value,label){const node=document.createElement('option');node.value=value;node.textContent=label;select.append(node);}
+function loadTable(table){
+  pastedTable=table;$('tableArea').hidden=false;$('csvArea').hidden=true;
+  $('tableColumn').replaceChildren();$('filterColumn').replaceChildren();
+  table.numeric.forEach(i=>option($('tableColumn'),i,table.headers[i]));
+  option($('filterColumn'),'','No filter');
+  table.headers.forEach((name,i)=>option($('filterColumn'),i,name));
+  $('tablePreview').replaceChildren();
+  const head=document.createElement('thead'),heading=document.createElement('tr');
+  for(const name of table.headers){const cell=document.createElement('th');cell.textContent=name;heading.append(cell);}head.append(heading);$('tablePreview').append(head);
+  const body=document.createElement('tbody');
+  for(const row of table.rows.slice(0,10)){const tr=document.createElement('tr');for(const value of row){const cell=document.createElement('td');cell.textContent=value;tr.append(cell);}body.append(tr);}$('tablePreview').append(body);
+  const race=table.headers.findIndex(name=>name.toLowerCase()==='race');
+  $('filterColumn').value=race>=0?String(race):String(table.headers.findIndex((_,i)=>!table.numeric.includes(i)));
+  if($('filterColumn').selectedIndex<0)$('filterColumn').value='';
+  updateFilter();
+}
+function updateFilter(){
+  $('filterValue').replaceChildren();const col=$('filterColumn').value;
+  option($('filterValue'),'','All groups');$('filterValue').disabled=col==='';
+  $('compareGroups').replaceChildren();
+  if(col!=='')for(const value of new Set(pastedTable.rows.map(row=>row[Number(col)]))){
+    option($('filterValue'),value,value);
+    const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.value=value;check.checked=true;check.onchange=()=>{$('comparison').hidden=true;};label.append(check,document.createTextNode(' '+value));$('compareGroups').append(label);
+  }
+}
+$('analyze').onclick=async()=>{
+  invalidate();$('analyze').disabled=true;
+  try{
+    const bins=$('bins').value;let result;
+    if(!pastedTable){result=await api('/analyze',{text:$('data').value,bins:bins===''?null:Number(bins)});if(result.table)loadTable(result.table);}
+    if(pastedTable){
+      const column=Number($('tableColumn').value),filter=$('filterColumn').value,group=$('filterValue').value;
+      const rows=pastedTable.rows.filter(row=>filter===''||group===''||row[Number(filter)]===group);
+      const values=rows.map(row=>row[column]).filter(value=>!['na','n/a','null','none','-'].includes(value.toLowerCase()));
+      const label=pastedTable.headers[column]+(filter!==''&&group!==''?` (${pastedTable.headers[Number(filter)]} = ${group})`:' (all rows)');
+      $('tableNote').textContent=`${pastedTable.rows.length} total rows · ${rows.length} selected · ${rows.length-values.length} missing values excluded from ${pastedTable.headers[column]}.`;
+      if(!values.length)throw Error('No numeric values in this selection. Choose another column or group.');
+      result=await api('/analyze',{text:values.join(', '),bins:bins===''?null:Number(bins)});
+      result.input_note=`Analyzing ${label}: ${values.length} observations. ${rows.length-values.length} missing values excluded.`;
+      render(result);
+      for(const id of ['chart','curve','boxplot']){const labels=$(id).querySelectorAll('text');labels[labels.length-(id==='chart'||id==='curve'?2:1)].textContent=label;}
+    }else render(result);
+  }catch(e){$('error').textContent=e.message;}finally{$('analyze').disabled=false;}
+};
+$('tableData').onclick=async()=>{clearTable();await $('analyze').onclick();if(!pastedTable)$('error').textContent='Paste a table with single-word headers followed by rows, such as income education race 16 10 B 18 7 H.';else $('tableArea').scrollIntoView({behavior:'smooth',block:'start'});};
+$('data').oninput=()=>{clearTable();invalidate();};$('bins').oninput=invalidate;
+$('tableColumn').onchange=()=>{$('analyze').click();};
+$('filterColumn').onchange=()=>{updateFilter();$('analyze').click();};
+$('filterValue').onchange=()=>{$('analyze').click();};
+$('example').onclick=()=>{clearTable();$('data').value='12, 15, 17, 18, 18, 19, 20, 21, 21, 22, 24, 25, 27, 30, 32';$('csvArea').hidden=true;$('analyze').click();};
+function selectColumn(){clearTable();invalidate();const c=columns[Number($('column').value)];$('data').value=c.values.join(', ');$('csvNote').textContent=`${c.values.length} numeric values; ${c.missing} blank cells skipped; ${c.invalid} nonnumeric or nonfinite cells excluded. Review these exclusions before analyzing.`;}
+async function importCSV(){const file=$('file').files[0];if(!file)return;invalidate();$('csvArea').hidden=true;try{if(file.size>4500000)throw Error('Choose a CSV smaller than 4.5 MB.');columns=await api('/csv',{text:await file.text(),header:$('header').checked});$('column').replaceChildren();columns.forEach((c,i)=>{const option=document.createElement('option');option.value=i;option.textContent=`${c.name} (${c.values.length} numbers)`;$('column').append(option);});$('column').value=Math.max(0,columns.findIndex(c=>c.values.length));$('csvArea').hidden=false;selectColumn();}catch(e){$('error').textContent=e.message;}}
+$('file').onchange=importCSV;$('header').onchange=importCSV;$('column').onchange=selectColumn;
+$('compare').onclick=async()=>{
+  invalidate();$('compare').disabled=true;$('analyze').disabled=true;
+  try{
+    if(!pastedTable||$('filterColumn').value==='')throw Error('Choose a grouping column under Filter by.');
+    const groups=Array.from($('compareGroups').querySelectorAll('input:checked'),node=>node.value);
+    const bins=$('bins').value;
+    const result=await api('/compare',{text:$('data').value,column:Number($('tableColumn').value),group_column:Number($('filterColumn').value),groups,bins:bins===''?null:Number(bins)});
+    render(result.overall);renderComparison(result);$('comparison').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(error){$('error').textContent=error.message;}
+  finally{$('compare').disabled=false;$('analyze').disabled=false;}
+};
+function renderComparison(data){
+  const groups=data.groups,colors=['#215ec6','#16806a','#ad4c22','#7544a3'];
+  $('comparisonTitle').textContent=`${data.column} by ${data.group_column}`;
+  $('comparisonStats').replaceChildren();
+  const heading=document.createElement('tr');for(const text of ['Statistic',...groups.map(g=>g.name)]){const cell=document.createElement('th');cell.textContent=text;heading.append(cell);}
+  const head=document.createElement('thead');head.append(heading);$('comparisonStats').append(head);
+  const body=document.createElement('tbody');
+  for(const [label,get] of [['Count',g=>g.summary.n],['Missing excluded',g=>g.missing],['Mean',g=>g.summary.mean],['Median',g=>g.summary.median],['Sample SD',g=>g.summary.sample_sd],['Population SD',g=>g.summary.population_sd],['Minimum',g=>g.summary.minimum],['Q1',g=>g.summary.box.q1],['Q3',g=>g.summary.box.q3],['Maximum',g=>g.summary.maximum],['IQR',g=>g.summary.box.iqr],['Outliers',g=>g.summary.box.outliers.length]]){
+    const row=document.createElement('tr');const name=document.createElement('th');name.scope='row';name.textContent=label;row.append(name);
+    for(const group of groups){const cell=document.createElement('td');cell.textContent=fmt(get(group));row.append(cell);}body.append(row);
+  }$('comparisonStats').append(body);
+  const facet=320,width=facet*groups.length,rows=data.overall.rows,lo=rows[0].lower,hi=rows.at(-1).upper;
+  const peak=Math.max(...groups.flatMap(g=>g.summary.rows.map(r=>r.relative*100)));
+  const step=Math.max(1,Math.ceil(peak/5/5)*5),yMax=Math.ceil(peak/step)*step;
+  for(const id of ['compareHistogram','compareCurve','compareBox']){$(id).replaceChildren();$(id).setAttribute('viewBox',`0 0 ${width} 360`);$(id).style.minWidth=width+'px';}
+  groups.forEach((group,index)=>{
+    const color=colors[index%colors.length],left=index*facet+50,w=250,bottom=280,h=210;
+    const x=value=>hi===lo?left+w/2:left+(value-lo)/(hi-lo)*w;
+    for(const id of ['compareHistogram','compareCurve','compareBox']){
+      draw(id,'text',{x:left+w/2,y:24,'text-anchor':'middle',fill:color,'font-size':16},`${group.name} (n = ${group.summary.n})`);
+      draw(id,'text',{x:left+w/2,y:345,'text-anchor':'middle',fill:'#172b46','font-size':13},data.column);
+      const stride=Math.max(1,Math.ceil(rows.length/4));
+      for(let i=0;i<=rows.length;i+=stride){const v=i===rows.length?hi:rows[i].lower;draw(id,'text',{x:left+i*w/rows.length,y:305,'text-anchor':'middle',fill:'#53647a','font-size':11},fmt(v));}
+    }
+    for(const id of ['compareHistogram','compareCurve']){
+      for(let value=0;value<=yMax;value+=step){const y=bottom-value/yMax*h;draw(id,'line',{x1:left,y1:y,x2:left+w,y2:y,stroke:'#dce4ef'});draw(id,'text',{x:left-6,y:y+4,'text-anchor':'end',fill:'#53647a','font-size':11},value+'%');}
+      const points=[];
+      group.summary.rows.forEach((r,i)=>{
+        const bar=w/rows.length,y=bottom-r.relative*100/yMax*h;
+        points.push([left+(i+.5)*bar,y]);
+        if(id==='compareHistogram'){
+          const rect=draw(id,'rect',{x:left+i*bar,y,width:bar,height:bottom-y,fill:color,stroke:'white','stroke-width':.7});
+          const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=`${interval(r)}: ${r.frequency} (${(r.relative*100).toFixed(1)}%)`;rect.append(title);
+        }
+      });
+      if(id==='compareCurve'){draw(id,'polyline',{points:points.map(p=>p.join(',')).join(' '),fill:'none',stroke:color,'stroke-width':2});points.forEach(([cx,cy])=>draw(id,'circle',{cx,cy,r:3,fill:color}));}
+    }
+    const b=group.summary.box,id='compareBox';
+    const line=(x1,y1,x2,y2)=>draw(id,'line',{x1,y1,x2,y2,stroke:color,'stroke-width':2});
+    line(left,280,left+w,280);line(x(b.lower_whisker),165,x(b.upper_whisker),165);
+    for(const value of [b.lower_whisker,b.upper_whisker])line(x(value),145,x(value),185);
+    draw(id,'rect',{x:x(b.q1),y:125,width:Math.max(0,x(b.q3)-x(b.q1)),height:80,fill:'#edf3fe',stroke:color,'stroke-width':2});line(x(b.median),125,x(b.median),205);
+    for(const value of new Set(b.outliers)){const circle=draw(id,'circle',{cx:x(value),cy:165,r:4,fill:'white',stroke:color,'stroke-width':2});const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent='Outlier: '+fmt(value);circle.append(title);}
+  });
+  $('comparison').hidden=false;
+}
+function downloadImage(blob,filename){
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function chartImage(id){
+  const source=$(id),copy=source.cloneNode(true);
+  const [, , width,height]=source.getAttribute('viewBox').split(/\s+/).map(Number);
+  copy.removeAttribute('id');copy.removeAttribute('role');
+  copy.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  copy.setAttribute('width',width);copy.setAttribute('height',height);
+  copy.setAttribute('font-family','Arial, sans-serif');copy.setAttribute('font-size','16');
+  const background=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  background.setAttribute('width',width);background.setAttribute('height',height);background.setAttribute('fill','white');
+  copy.insertBefore(background,copy.firstChild);
+  return {blob:new Blob([new XMLSerializer().serializeToString(copy)],{type:'image/svg+xml;charset=utf-8'}),width,height};
+}
+async function saveChart(button){
+  if(!current)return;
+  const id=button.dataset.chart,format=button.dataset.format;
+  const name={chart:'histogram',curve:'frequency_curve',boxplot:'box_plot',compareHistogram:'group_histograms',compareCurve:'group_curves',compareBox:'group_box_plots'}[id];
+  button.disabled=true;$('exportStatus').textContent='Preparing image…';
+  try{
+    const {blob,width,height}=chartImage(id);let output=blob;
+    if(format==='png'){
+      const url=URL.createObjectURL(blob);
+      try{
+        const img=new Image();
+        await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Unable to create PNG. Try saving SVG.'));img.src=url;});
+        const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+        const context=canvas.getContext('2d');if(!context)throw Error('PNG export is unavailable in this browser. Try SVG.');
+        context.drawImage(img,0,0,width,height);
+        output=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(Error('Unable to create PNG. Try SVG.')),'image/png'));
+      }finally{URL.revokeObjectURL(url);}
+    }
+    downloadImage(output,`${name}.${format}`);
+    $('exportStatus').textContent=`Download ready: ${name}.${format} (${(output.size/1024).toFixed(1)} KB).`;
+  }catch(error){$('exportStatus').textContent=error.message;}
+  finally{button.disabled=false;}
+}
+for(const button of document.querySelectorAll('[data-chart]'))button.onclick=()=>saveChart(button);
+$('download').onclick=()=>{if(!current)return;const lines=[['Lower bound','Upper bound','Upper bound included','Frequency','Relative frequency','Cumulative frequency'],...current.rows.map(r=>[r.lower,r.upper,r.closed_right,r.frequency,r.relative,r.cumulative])];const url=URL.createObjectURL(new Blob([lines.map(r=>r.join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='frequency_distribution.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+</script></html>
