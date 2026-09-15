@@ -120,7 +120,10 @@ def compare_groups(table, column, group_column, selected, bins=None):
         rows = []
         for row, count in zip(template, counts):
             cumulative += count
-            rows.append(dict(row, frequency=count, relative=count/group['summary']['n'], cumulative=cumulative))
+            bin_width = row['upper'] - row['lower']
+            density = count / (group['summary']['n'] * bin_width) if bin_width > 0 else None
+            rows.append(dict(row, frequency=count, relative=count/group['summary']['n'],
+                             cumulative=cumulative, density=density))
         group['summary']['rows'] = rows
     overall.update(values=pooled, input_note='Combined observations from the selected comparison groups. Individual group results appear above.')
     return dict(groups=groups, overall=overall, column=table['headers'][column], group_column=table['headers'][group_column])
@@ -200,8 +203,11 @@ def analyze(values, bins=None):
     rows, cumulative = [], 0
     for i, frequency in enumerate(frequencies):
         cumulative += frequency
+        bin_width = edges[i + 1] - edges[i]
+        # Constant data retains its zero-width bin; a finite density is undefined.
+        density = frequency / (n * bin_width) if bin_width > 0 else None
         rows.append(dict(lower=edges[i], upper=edges[i + 1], frequency=frequency,
-                         relative=frequency / n, cumulative=cumulative,
+                         relative=frequency / n, cumulative=cumulative, density=density,
                          closed_right=i == len(frequencies) - 1))
     result = dict(n=n, mean=statistics.mean(values), median=statistics.median(values),
                   sample_sd=statistics.stdev(values) if n > 1 else None,

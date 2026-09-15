@@ -28,3 +28,40 @@ Start with 20% and 7 days, then try 1,000,000 days. Small samples can differ con
 “Range” here means the number of simulated days. Each day uses a uniform random value in [0, 1); a value below the chosen probability means rain. At 20%, this has the same rain probability as calling digits 0 and 1 rain among the ten equally likely digits 0–9, while supporting probabilities such as 23.5%.
 
 The model assumes independent days with a constant probability. It demonstrates long-run (frequentist) probability; it does not estimate real weather probabilities or subjective beliefs.
+
+
+## Gamma scale app (Problem 2.21)
+
+From the assignment folder, run:
+
+```powershell
+python code/gamma_scale_problem_2_21.py
+```
+
+Requires NumPy and Matplotlib (`python -m pip install numpy matplotlib`).
+The app plots shape k = 3 with scales 0.5, 1, 2, 3, 4, and 5 on matching axes.
+Checkboxes show or hide individual curves; the Matplotlib toolbar supports zooming
+and saving the current view. A table lists each mean, standard deviation, and mode.
+Each run saves `gamma_scale_2_21.png` and `gamma_scale_2_21.svg` in the assignment
+folder. Use `--no-show` to export without opening a window, or `--output-dir PATH`
+to choose another destination.
+
+Increasing scale stretches the distribution to the right and lowers its peak.
+Mean, mode, and standard deviation increase proportionally to scale; variance
+increases with scale squared. Total probability stays 1, and skewness stays fixed
+because k is unchanged.
+
+
+## Heights and weights (Problem 2.27)
+
+From the assignment folder: `python code/height_weight_problem_2_27.py`.
+Requires NumPy and Matplotlib. Simulates 1,000 pairs using a reproducible seed
+(default 27), plots height against weight, and compares sample statistics with
+model values. Resimulate increments the seed; Save plot + CSV exports the current
+sample. Initial PNG, SVG, and CSV files are saved automatically to the assignment
+folder as `height_weight_2_27.*`. Options: `--seed 27`, `--no-show`, and
+`--output-dir PATH`.
+
+The model generates X from N(162, 7^2) and Y = 3 + 0.40X + independent N(0, 8^2)
+noise. Overall weight SD is sqrt(0.40^2 * 7^2 + 8^2), about 8.476 kg; the
+population correlation is about 0.3304. Sample SDs use n - 1.
