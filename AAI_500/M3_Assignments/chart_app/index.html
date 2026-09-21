@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sampling Chart Lab</title>
+<style>
+body{font:16px system-ui,sans-serif;margin:0;background:#f3f5f8;color:#17243b}main{max-width:1300px;margin:auto;padding:28px}h1{margin-bottom:6px}p{line-height:1.5}section{background:white;border:1px solid #dce2eb;border-radius:12px;padding:22px;margin-top:20px}.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}label{display:flex;flex-direction:column;gap:7px;font-weight:600;font-size:14px}input,select,button{font:inherit;padding:10px;border:1px solid #b9c4d4;border-radius:6px}button{background:#245bba;color:white;cursor:pointer}button:disabled{opacity:.5;cursor:wait}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.secondary{background:white;color:#245bba}img{max-width:100%;height:auto}#status{white-space:pre-wrap}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;border-bottom:1px solid #e3e8ee;padding:10px}.scroll{overflow:auto}[hidden]{display:none!important}.hint{color:#536178;font-size:14px}#notice{color:#9b3b00}
+</style>
+<main>
+<h1>Sampling Chart Lab</h1>
+<p>Choose an exercise, change the inputs, and generate a chart. Download it to insert into your notebook.</p>
+<section>
+<form id="controls">
+<label>Exercise / chart type<select id="preset">
+<option value="poll">3.2 · Exit-poll proportions</option>
+<option value="cola">3.3 · Cola preferences</option>
+<option value="gamma5">3.5(a) · Gamma sample means, SD 5</option>
+<option value="gamma8">3.5(a) · Gamma sample means, SD 8</option>
+<option value="area">3.5(b) · Gamma interval area</option>
+<option value="coin">3.8 · Coin-flip proportions</option>
+<option value="uniform">3.13 · Uniform sample means</option>
+<option value="normal">3.21 · Individual data and sample means</option>
+<option value="bootstrap">AI · Bootstrap model comparisons</option>
+</select></label>
+<p class="hint" id="help"></p>
+<div class="fields" id="inputs"></div>
+<div class="actions"><button id="generate" type="submit">Generate chart</button><button class="secondary" id="reset" type="button">Reset preset</button></div>
+</form>
+<p id="status" role="status">Choose your settings, then generate a chart.</p>
+</section>
+<section id="result" hidden>
+<p id="notice" hidden>Inputs have changed. Generate again to update the chart and downloads.</p>
+<img id="chart" alt="Generated sampling distribution chart">
+<div class="actions"><button data-export="png">Download PNG</button><button data-export="svg">Download SVG</button><button data-export="csv" class="secondary">Download plotted data (CSV)</button><button id="settings" class="secondary">Download settings</button></div>
+<p class="hint">Downloads contain the last generated result. PNG is easiest to paste into a notebook; SVG stays sharp when resized.</p>
+<div class="scroll"><table id="summary"></table></div>
+<div id="messages"></div>
+</section>
+</main>
+<script>
+const presets={
+ poll:{mode:'poll',n:1648,p:.5,observed:.515,repetitions:100000,help:'Enter probabilities as decimals (0.50 = 50%). The observed value marks a vertical reference line.'},
+ cola:{mode:'poll',n:49,p:.5,observed:29/49,repetitions:100000,help:'Use the observed proportion, such as 29/49 = 0.5918367347. Samples use independent yes/no outcomes.'},
+ gamma5:{mode:'gamma_means',mean:20,sd:5,sizes:'25',repetitions:100000,help:'Change the population mean, standard deviation, and sample sizes. Each plotted value is a mean of a new sample.'},
+ gamma8:{mode:'gamma_means',mean:20,sd:8,sizes:'25',repetitions:100000,help:'The same gamma simulation with a different population SD. Export each scenario for comparison.'},
+ area:{mode:'gamma_area',mean:20,sd:5,lower:15,upper:25,help:'Set a gamma population using its mean and SD, then choose the interval to shade.'},
+ coin:{mode:'coin',p:.5,sizes:'1,2,3,4',help:'These are exact binomial probabilities, not simulated frequencies. Enter up to six flip counts, separated by commas.'},
+ uniform:{mode:'uniform',lower:0,upper:1,sizes:'1,2,10,30',repetitions:100000,help:'Choose the uniform population bounds and up to six sample sizes. Each panel uses a different sample size.'},
+ normal:{mode:'normal',mean:3,sd:.4,sizes:'25',repetitions:100000,help:'Compare one sample of individuals with repeated sample means. The individual sample uses the first sample size entered.'},
+ bootstrap:{mode:'bootstrap',mean:.85,sd:.10,mean_b:.88,sd_b:.08,population_size:10000,sizes:'50,500',repetitions:1000,help:'Generate two lognormal populations and resample with replacement. Model A corresponds to logistic and Model B to ensemble in the exercise. Lognormal scores can exceed 1.'}
+};
+const labels={n:'Sample size',p:'Population probability',observed:'Observed proportion',mean:'Population mean / Model A mean',sd:'Population SD / Model A SD',mean_b:'Model B mean',sd_b:'Model B SD',lower:'Lower bound',upper:'Upper bound',sizes:'Sample sizes (comma separated)',population_size:'Population size per model',repetitions:'Number of repeated samples',seed:'Random seed',bins:'Histogram bins',title:'Chart title (optional)'};
+const form=document.querySelector('#controls'),inputs=document.querySelector('#inputs');
+let result=null, busy=false;
+function reset(){
+ const preset=presets[document.querySelector('#preset').value];
+ document.querySelector('#help').textContent=preset.help;
+ inputs.replaceChildren();
+ const values={...preset};delete values.mode;delete values.help;
+ if(!['coin','gamma_area'].includes(preset.mode)){values.seed=42;values.bins=35;}
+ values.title='';
+ for(const [key,value] of Object.entries(values)){
+  const label=document.createElement('label');label.textContent=labels[key];
+  const input=document.createElement('input');input.name=key;input.value=value;
+  input.type=['sizes','title'].includes(key)?'text':'number';
+  if(input.type==='number'){input.step=['n','population_size','seed','repetitions','bins'].includes(key)?'1':'any';input.required=true;}
+  if(key==='title')input.maxLength=160;
+  label.append(input);inputs.append(label);
+ }
+ dirty();
+}
+function dirty(){document.querySelector('#notice').hidden=!result;}
+document.querySelector('#preset').addEventListener('change',reset);
+document.querySelector('#reset').addEventListener('click',reset);
+form.addEventListener('input',dirty);
+form.addEventListener('submit',async event=>{
+ event.preventDefault();if(busy)return;
+ const data=Object.fromEntries(new FormData(form));data.mode=presets[document.querySelector('#preset').value].mode;
+ busy=true;for(const element of form.elements)element.disabled=true;
+ const status=document.querySelector('#status');status.textContent='Generating chart…';
+ try{
+  const response=await fetch('/chart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const payload=await response.json();if(!response.ok)throw new Error(payload.error||'Could not generate chart.');
+  result=payload;
+  document.querySelector('#chart').src='data:image/png;base64,'+result.exports.png;
+  document.querySelector('#result').hidden=false;document.querySelector('#notice').hidden=true;
+  const table=document.querySelector('#summary');table.replaceChildren();
+  const keys=[...new Set(result.summaries.flatMap(row=>Object.keys(row)))];
+  const header=document.createElement('tr');for(const key of keys){const th=document.createElement('th');th.textContent=key;header.append(th);}table.append(header);
+  for(const row of result.summaries){const tr=document.createElement('tr');for(const key of keys){const td=document.createElement('td');td.textContent=row[key]??'—';tr.append(td);}table.append(tr);}
+  const messages=document.querySelector('#messages');messages.replaceChildren();
+  for(const message of result.messages){const p=document.createElement('p');p.textContent=message;messages.append(p);}
+  status.textContent='Chart ready. Save a PNG or SVG below.';
+ }catch(error){status.textContent=error.message;}finally{busy=false;for(const element of form.elements)element.disabled=false;}
+});
+function download(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+document.querySelectorAll('[data-export]').forEach(button=>button.addEventListener('click',()=>{
+ if(!result)return;const ext=button.dataset.export;const bytes=Uint8Array.from(atob(result.exports[ext]),c=>c.charCodeAt(0));
+ download(new Blob([bytes],{type:{png:'image/png',svg:'image/svg+xml',csv:'text/csv'}[ext]}),`sampling_${result.parameters.mode}.${ext}`);
+}));
+document.querySelector('#settings').addEventListener('click',()=>{if(result)download(new Blob([JSON.stringify(result.parameters,null,2)],{type:'application/json'}),'chart_settings.json');});
+reset();
+</script>
+</html>
