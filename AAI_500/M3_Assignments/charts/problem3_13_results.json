@@ -1,0 +1,40 @@
+{
+  "summaries": [
+    {
+      "Series": "Means, n=1",
+      "Mean": "0.5006",
+      "SD / empirical SE": "0.2885",
+      "Theoretical SE": "0.2887"
+    },
+    {
+      "Series": "Means, n=2",
+      "Mean": "0.5000",
+      "SD / empirical SE": "0.2039",
+      "Theoretical SE": "0.2041"
+    },
+    {
+      "Series": "Means, n=10",
+      "Mean": "0.4999",
+      "SD / empirical SE": "0.0910",
+      "Theoretical SE": "0.0913"
+    },
+    {
+      "Series": "Means, n=30",
+      "Mean": "0.4999",
+      "SD / empirical SE": "0.0526",
+      "Theoretical SE": "0.0527"
+    }
+  ],
+  "messages": [],
+  "parameters": {
+    "mode": "uniform",
+    "lower": 0,
+    "upper": 1,
+    "sizes": "1,2,10,30",
+    "repetitions": 100000,
+    "seed": 42,
+    "bins": 40,
+    "title": "Problem 3.13: Sample means from Uniform(0, 1)"
+  },
+  "seed": 42
+}

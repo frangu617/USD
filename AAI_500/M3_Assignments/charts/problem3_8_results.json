@@ -1,0 +1,32 @@
+{
+  "summaries": [
+    {
+      "Series": "n=1",
+      "Mean": "0.5000",
+      "Theoretical SE": "0.5000"
+    },
+    {
+      "Series": "n=2",
+      "Mean": "0.5000",
+      "Theoretical SE": "0.3536"
+    },
+    {
+      "Series": "n=3",
+      "Mean": "0.5000",
+      "Theoretical SE": "0.2887"
+    },
+    {
+      "Series": "n=4",
+      "Mean": "0.5000",
+      "Theoretical SE": "0.2500"
+    }
+  ],
+  "messages": [],
+  "parameters": {
+    "mode": "coin",
+    "p": 0.5,
+    "sizes": "1,2,3,4",
+    "title": "Problem 3.8: Exact sampling distributions"
+  },
+  "seed": 42
+}

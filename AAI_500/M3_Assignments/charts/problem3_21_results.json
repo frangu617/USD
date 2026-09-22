@@ -1,0 +1,27 @@
+{
+  "summaries": [
+    {
+      "Series": "One sample of individuals",
+      "Mean": "2.9858",
+      "SD / empirical SE": "0.3324"
+    },
+    {
+      "Series": "Means, n=25",
+      "Mean": "3.0002",
+      "SD / empirical SE": "0.0799",
+      "Theoretical SE": "0.0800"
+    }
+  ],
+  "messages": [],
+  "parameters": {
+    "mode": "normal",
+    "mean": 3,
+    "sd": 0.4,
+    "sizes": "25",
+    "repetitions": 100000,
+    "seed": 42,
+    "bins": 30,
+    "title": "Problem 3.21: Individual GPAs and sample means"
+  },
+  "seed": 42
+}

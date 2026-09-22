@@ -1,0 +1,59 @@
+{
+  "summaries": [
+    {
+      "Series": "Model A population",
+      "Mean": "0.8491",
+      "SD / empirical SE": "0.1005"
+    },
+    {
+      "Series": "Model B population",
+      "Mean": "0.8816",
+      "SD / empirical SE": "0.0804"
+    },
+    {
+      "Series": "Model A bootstrap means, n=50",
+      "Mean": "0.8495",
+      "SD / empirical SE": "0.0143",
+      "Theoretical SE": "0.0142"
+    },
+    {
+      "Series": "Model B bootstrap means, n=50",
+      "Mean": "0.8820",
+      "SD / empirical SE": "0.0113",
+      "Theoretical SE": "0.0114"
+    },
+    {
+      "Series": "Model A bootstrap means, n=500",
+      "Mean": "0.8492",
+      "SD / empirical SE": "0.0044",
+      "Theoretical SE": "0.0045"
+    },
+    {
+      "Series": "Model B bootstrap means, n=500",
+      "Mean": "0.8818",
+      "SD / empirical SE": "0.0036",
+      "Theoretical SE": "0.0036"
+    }
+  ],
+  "messages": [
+    "Model A: 7.53% of population scores exceed 1.",
+    "Model B: 7.85% of population scores exceed 1.",
+    "Lognormal scores can exceed 1; this model does not enforce the bounds of real precision. Values are not clipped.",
+    "n=50: Model A mean exceeds Model B in 3.50% of independent pairs.",
+    "n=500: Model A mean exceeds Model B in 0.00% of independent pairs."
+  ],
+  "parameters": {
+    "mode": "bootstrap",
+    "mean": 0.85,
+    "sd": 0.1,
+    "mean_b": 0.88,
+    "sd_b": 0.08,
+    "population_size": 10000,
+    "sizes": "50,500",
+    "repetitions": 1000,
+    "seed": 42,
+    "bins": 35,
+    "title": "AI metrics: Model A = logistic; Model B = ensemble"
+  },
+  "seed": 42
+}
