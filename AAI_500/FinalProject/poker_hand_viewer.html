@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Poker hand dataset</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #172033; }
+    h1 { margin-bottom: .5rem; }
+    button, input { font: inherit; padding: .45rem .7rem; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #2563eb; }
+    .navigation { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 1rem 0; }
+    input { width: 6rem; }
+    #status { min-height: 1.5em; }
+    .table-container { overflow: auto; max-height: 70vh; border: 1px solid #d4dbe6; }
+    table { border-collapse: separate; border-spacing: 0; width: 100%; font-variant-numeric: tabular-nums; }
+    th, td { padding: .5rem .9rem; text-align: right; border-bottom: 1px solid #e3e8f0; }
+    th { position: sticky; top: 0; background: #eaf0f8; }
+    th button { border: 0; background: transparent; color: inherit; font-weight: 600; white-space: nowrap; }
+    tbody tr:nth-child(even) { background: #f6f8fb; }
+    caption { text-align: left; padding: .8rem; }
+  </style>
+</head>
+<body>
+  <h1>Poker hand dataset</h1>
+  <p>100 rows per page. Click a column header to sort all rows; click again to reverse the order.</p>
+  <form class="navigation" id="navigation" aria-label="Table pagination">
+    <button type="button" id="first">First</button>
+    <button type="button" id="previous">Previous</button>
+    <label for="page">Page</label>
+    <input id="page" type="number" min="1" step="1" value="1" required>
+    <span id="page-count"></span>
+    <button type="submit">Go</button>
+    <button type="button" id="next">Next</button>
+    <button type="button" id="last">Last</button>
+  </form>
+  <p id="status" role="status" aria-live="polite">Loading data...</p>
+  <div class="table-container" tabindex="0" role="region" aria-label="Scrollable dataset">
+    <table id="data-table" aria-busy="true">
+      <caption>Features and target values</caption>
+      <thead><tr id="headers"></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <script>
+    const byId = id => document.getElementById(id);
+    let state = { page: 1, total_pages: 1, sort: '', order: 'asc' };
+
+    function setLoading(loading) {
+      document.querySelectorAll('button, input').forEach(control => {
+        control.disabled = loading;
+      });
+      byId('first').disabled = loading || state.page <= 1;
+      byId('previous').disabled = loading || state.page <= 1;
+      byId('next').disabled = loading || state.page >= state.total_pages;
+      byId('last').disabled = loading || state.page >= state.total_pages;
+      byId('data-table').setAttribute('aria-busy', String(loading));
+    }
+
+    async function loadPage(page, sort = state.sort, order = state.order) {
+      setLoading(true);
+      byId('status').textContent = 'Loading data...';
+      try {
+        const query = new URLSearchParams({ page, sort, order });
+        const response = await fetch(`/data?${query}`);
+        if (!response.ok) throw new Error(`Request failed (${response.status})`);
+        const data = await response.json();
+        state = data;
+
+        if (!byId('headers').children.length) {
+          data.columns.forEach(column => {
+            const th = document.createElement('th');
+            th.scope = 'col';
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.addEventListener('click', () => {
+              const direction = state.sort === column && state.order === 'asc' ? 'desc' : 'asc';
+              loadPage(1, column, direction);
+            });
+            th.append(button);
+            byId('headers').append(th);
+          });
+        }
+
+        Array.from(byId('headers').children).forEach((th, index) => {
+          const column = data.columns[index];
+          const selected = data.sort === column;
+          th.setAttribute('aria-sort', selected ? (data.order === 'asc' ? 'ascending' : 'descending') : 'none');
+          th.firstChild.textContent = column + (selected ? (data.order === 'asc' ? ' ▲' : ' ▼') : ' ↕');
+          th.firstChild.title = `Sort by ${column}`;
+        });
+
+        const rows = document.createDocumentFragment();
+        data.rows.forEach(row => {
+          const tr = document.createElement('tr');
+          row.forEach(value => {
+            const td = document.createElement('td');
+            td.textContent = value ?? '';
+            tr.append(td);
+          });
+          rows.append(tr);
+        });
+        byId('rows').replaceChildren(rows);
+        document.querySelector('.table-container').scrollTop = 0;
+        byId('page').value = data.page;
+        byId('page').max = data.total_pages;
+        byId('page-count').textContent = `of ${data.total_pages.toLocaleString()}`;
+        const first = data.total_rows ? (data.page - 1) * data.page_size + 1 : 0;
+        const last = Math.min(data.page * data.page_size, data.total_rows);
+        byId('status').textContent = `Showing rows ${first.toLocaleString()}–${last.toLocaleString()} of ${data.total_rows.toLocaleString()}`;
+      } catch (error) {
+        byId('status').textContent = `Could not load the table. Make sure the Python script is running, then click Go to retry. ${error.message}`;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    byId('first').addEventListener('click', () => loadPage(1));
+    byId('previous').addEventListener('click', () => loadPage(state.page - 1));
+    byId('next').addEventListener('click', () => loadPage(state.page + 1));
+    byId('last').addEventListener('click', () => loadPage(state.total_pages));
+    byId('navigation').addEventListener('submit', event => {
+      event.preventDefault();
+      loadPage(Number(byId('page').value));
+    });
+    loadPage(1);
+  </script>
+</body>
+</html>
