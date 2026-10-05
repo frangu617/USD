@@ -19,6 +19,7 @@ htmlcov/
 # Download and plotting caches (keep dataset CSVs and assignment figures)
 .kaggle_cache/
 .matplotlib/
+.jupyter/
 
 # Local credentials and environment settings
 .env

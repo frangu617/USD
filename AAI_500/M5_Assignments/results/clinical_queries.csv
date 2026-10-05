@@ -1,0 +1,6 @@
+Query,Evidence,P(HeartDisease=1),Matching patients,Observed frequency (not model posterior)
+a,"{'Age_bin': '60+', 'ST_Slope': 'Flat'}",0.8095922448952408,150,0.8666666666666667
+b,"{'Age_bin': '60+', 'ST_Slope': 'Flat', 'ExerciseAngina': 1}",0.9118757903157837,91,0.9340659340659341
+c,"{'Cholesterol_bin': 'High', 'MaxHR_bin': 'Low'}",0.6874745474957016,74,0.7837837837837838
+d,"{'ChestPainType': 'ATA', 'ExerciseAngina': 0}",0.10324811144466439,156,0.09615384615384616
+e,"{'Age_bin': '60+', 'ST_Slope': 'Flat', 'ExerciseAngina': 1, 'Oldpeak_bin': 'High'}",0.8962862823339165,23,1.0

@@ -1,0 +1,7 @@
+{
+  "Training patients": 642,
+  "Test patients": 276,
+  "Accuracy": 0.8731884057971014,
+  "ROC AUC": 0.939422923641001,
+  "Majority baseline accuracy": 0.5543478260869565
+}
