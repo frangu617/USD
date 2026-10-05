@@ -1,0 +1,43 @@
+{
+  "source": "https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/versions/1",
+  "shape": [
+    918,
+    12
+  ],
+  "columns": [
+    "Age",
+    "Sex",
+    "ChestPainType",
+    "RestingBP",
+    "Cholesterol",
+    "FastingBS",
+    "RestingECG",
+    "MaxHR",
+    "ExerciseAngina",
+    "Oldpeak",
+    "ST_Slope",
+    "HeartDisease"
+  ],
+  "missing": {
+    "Age": 0,
+    "Sex": 0,
+    "ChestPainType": 0,
+    "RestingBP": 0,
+    "Cholesterol": 0,
+    "FastingBS": 0,
+    "RestingECG": 0,
+    "MaxHR": 0,
+    "ExerciseAngina": 0,
+    "Oldpeak": 0,
+    "ST_Slope": 0,
+    "HeartDisease": 0
+  },
+  "zeros_numeric": {
+    "Age": 0,
+    "RestingBP": 1,
+    "Cholesterol": 172,
+    "MaxHR": 0,
+    "Oldpeak": 368
+  },
+  "duplicate_rows": 0
+}
