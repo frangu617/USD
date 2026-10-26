@@ -1,0 +1,32 @@
+[
+  {
+    "source": "MIT Technology Review",
+    "url": "https://www.technologyreview.com/feed/",
+    "items": 10,
+    "root": "rss"
+  },
+  {
+    "source": "Ars Technica",
+    "url": "https://feeds.arstechnica.com/arstechnica/index",
+    "items": 20,
+    "root": "rss"
+  },
+  {
+    "source": "TechCrunch",
+    "url": "https://techcrunch.com/feed/",
+    "items": 20,
+    "root": "rss"
+  },
+  {
+    "source": "Help Net Security",
+    "url": "https://www.helpnetsecurity.com/feed/",
+    "items": 10,
+    "root": "rss"
+  },
+  {
+    "source": "Hacker News",
+    "url": "https://news.ycombinator.com/rss",
+    "items": 30,
+    "root": "rss"
+  }
+]

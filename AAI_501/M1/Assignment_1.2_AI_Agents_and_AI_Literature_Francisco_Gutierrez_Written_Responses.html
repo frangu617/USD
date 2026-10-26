@@ -1,0 +1,185 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Assignment 1.2 - Francisco Gutierrez</title><style>body{font-family:Arial,sans-serif;font-size:10pt;line-height:1.4;color:#172337}
+h1{font-size:21pt;color:#173d60}h2{font-size:15pt;color:#173d60;margin-top:24px}h3{font-size:12pt}
+table{break-inside:avoid;border-collapse:collapse;width:100%;font-size:9pt}th,td{border:1px solid #bac7d4;padding:7px;vertical-align:top}
+th{background:#eaf0f6}pre{white-space:pre-wrap;font-size:8pt}a{color:#205c8c;overflow-wrap:anywhere}
+tr{break-inside:avoid}h1,h2,h3{break-after:avoid}@page{size:Letter;margin:0.65in}</style></head><body><h1>Assignment 1.2: AI Agents and AI Literature</h1>
+<p><strong>Francisco Gutierrez</strong></p>
+<p>Question 1 documents the literature collection workflow. Question 2(a) contains the agent implementation; Questions 2(b) and 2(c) define its proposed goal and future functionality. Agent execution is not required. An optional execution attempt returned a Gemini 503 availability error; no successful agent actions are claimed.</p>
+<p><strong>Submission guide:</strong> This PDF answers Questions 1(a), 1(b), 2(b), and 2(c). Question 2(a), including code and its recorded execution outcome, is provided in the separate HTML notebook export.</p>
+<h1>Question 1: AI Literature Review</h1>
+<p><strong>Question 1 | Search, Collect, Process</strong></p>
+<p><strong>Purpose:</strong> Identify at least five technology information sources, explain why they were selected, and document a repeatable workflow for collecting and reviewing recent articles.</p>
+<p><strong>Collection tools:</strong> RSS Guard is installed and configured with five feeds. ChatGPT and the optional CSV tracker support the manual review stage.</p>
+<h2>Question 1(a): Five information sources and rationale</h2>
+<p>I plan to follow five sources covering different parts of the technology industry, particularly artificial intelligence, machine learning, software development, and cybersecurity.</p>
+<table>
+<thead>
+<tr>
+<th>Information source</th>
+<th>Website</th>
+<th>Why I chose it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MIT Technology Review</strong></td>
+<td>https://www.technologyreview.com/</td>
+<td>Covers AI research and emerging technologies, which directly relate to my studies in applied AI and machine learning.</td>
+</tr>
+<tr>
+<td><strong>Ars Technica</strong></td>
+<td>https://arstechnica.com/</td>
+<td>Provides in-depth reporting on computing, software development, and technical issues relevant to my programming background.</td>
+</tr>
+<tr>
+<td><strong>TechCrunch</strong></td>
+<td>https://techcrunch.com/</td>
+<td>Helps me follow startups, new products, and the business applications of technology.</td>
+</tr>
+<tr>
+<td><strong>Help Net Security</strong></td>
+<td>https://www.helpnetsecurity.com/</td>
+<td>Covers cybersecurity threats, vulnerabilities, and AI-related security concerns.</td>
+</tr>
+<tr>
+<td><strong>Hacker News</strong></td>
+<td>https://news.ycombinator.com/</td>
+<td>Aggregates articles and community discussions, exposing me to topics developers and researchers find useful.</td>
+</tr>
+</tbody>
+</table>
+<p>Together, these provide research-oriented reporting, industry news, cybersecurity coverage, and practitioner perspectives. Hacker News is an aggregator, so I will verify claims using the original linked article.</p>
+<h2>Question 1(b): Collection workflow and technical architecture</h2>
+<p>I configured <strong>RSS Guard</strong>, a free desktop RSS reader, with five RSS feeds in a <strong>Technology Research</strong> folder and fetched their article headlines. This collects new technology articles locally without an online news-reader account and lets me review sources in one application. I will manually select promising articles and record them in a tracker. ChatGPT can help me understand unfamiliar terminology and summarize what I read, but I will verify its output against each original article.</p>
+<h3>Architecture diagram</h3>
+<pre><code class="language-text"> MIT Technology Review      Ars Technica       TechCrunch
+           \                  |                 /
+            \                 |                /
+         Help Net Security    |        Hacker News
+                   \         |         /
+                    v         v        v
+                 RSS / Atom feeds
+                          |
+                          v
+                RSS Guard (desktop)
+              &quot;Technology Research&quot; folder
+                          |
+                          v
+               Manual headline review
+                          |
+               +----------+----------+
+               |                     |
+               v                     v
+        CSV article tracker    ChatGPT reading support
+               |                     |
+               +----------+----------+
+                          |
+                          v
+                Read &amp; verify original
+                          |
+                          v
+                 Weekly discussion post
+</code></pre>
+<p><strong>Automation boundary:</strong> RSS Guard downloads feed updates when the application is running and feeds are refreshed. Reviewing articles, choosing a topic, confirming its publication date, and writing the final discussion remain manual. Not every site offers one obvious feed URL; confirm the working RSS/Atom feed for each publication and use its official website as a fallback when necessary.</p>
+<h3>Collection configuration and review frequency</h3>
+<p>The five RSS endpoints below were checked and returned parseable RSS feeds with article entries. They are also packaged in <code>Technology_Research_Feeds.opml</code>, which groups the subscriptions under <strong>Technology Research</strong> for import into RSS Guard.</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>RSS address</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MIT Technology Review</td>
+<td>https://www.technologyreview.com/feed/</td>
+</tr>
+<tr>
+<td>Ars Technica</td>
+<td>https://feeds.arstechnica.com/arstechnica/index</td>
+</tr>
+<tr>
+<td>TechCrunch</td>
+<td>https://techcrunch.com/feed/</td>
+</tr>
+<tr>
+<td>Help Net Security</td>
+<td>https://www.helpnetsecurity.com/feed/</td>
+</tr>
+<tr>
+<td>Hacker News</td>
+<td>https://news.ycombinator.com/rss</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Completed configuration:</strong> I imported <code>Technology_Research_Feeds.opml</code> through <strong>Accounts &gt; the local RSS account &gt; Import feeds</strong>, then selected <strong>Fetch all</strong>. The Technology Research folder contains all five subscriptions. Verification on October 26, 2026 found <strong>90 saved articles</strong> in the local RSS Guard database, and I confirmed that article headlines appeared in the application. This verifies collection, not that every saved article meets the seven-day publication requirement; dates will be checked when selecting the weekly reading.</p>
+<p><strong>Review schedule:</strong> I will refresh and review headlines every <strong>Monday, Wednesday, and Friday</strong>, for <strong>10-15 minutes</strong> each session. I will check feed failures during each review and verify my source mix monthly.</p>
+<p><strong>Selection and processing:</strong> I will record promising articles in a CSV tracker with source, title, original publication date, URL, and notes. Before each weekly discussion, I will choose an article published within the preceding seven days, read the original, verify the date, and write my own response with citations. ChatGPT will serve as a reading aid; I will check its explanations against the original article.</p>
+<p><strong>Technical boundary:</strong> RSS Guard refreshes feeds while running. Article selection, date verification, tracker entry, and discussion writing remain manual. The tracker is stored locally; ChatGPT only receives text that I choose to share.</p>
+<h3>Question 1(b): Article tracking</h3>
+<p>The editable notebook includes an optional Python CSV tracker. It records source, title, publication date, URL, and notes, and filters candidate articles by publication date. The tracker can also be maintained directly in a spreadsheet. I will verify original publication dates because an updated date does not necessarily indicate a new article.</p>
+<h3>Publication-date check</h3>
+<p>The optional notebook tracker compares recorded publication dates with the review date. Original publication dates must still be checked on the source websites.</p>
+<h3>Question 1(b): Workflow summary</h3>
+<p>My collection workflow uses five technology news sources configured in <strong>RSS Guard</strong>, with an optional Python-based article tracker and ChatGPT as a reading assistant. RSS Guard has fetched the feeds locally, so I do not need an account with an online RSS service. I plan to review its headlines on <strong>Monday, Wednesday, and Friday</strong> for about <strong>10–15 minutes</strong> each time. I will record promising articles in a CSV file with their titles, sources, publication dates, links, and notes. I can then use the Python tracker to identify articles from the preceding seven days and choose one for each week's discussion. I will verify facts and dates from the original websites. This workflow helps me stay organized while following AI, machine learning, software development, and cybersecurity news.</p>
+<h3>Links to workflow tools</h3>
+<ul>
+<li>RSS Guard: https://rssguard.com/</li>
+<li>ChatGPT: https://chatgpt.com/</li>
+<li>Python documentation (CSV module): https://docs.python.org/3/library/csv.html</li>
+</ul>
+<h2>Question 2(b): Technical goal and weighted definitions of success</h2>
+<p><strong>Goal.</strong> My study-planning agent should turn assignment deadlines, course requirements, and available calendar windows into a feasible, traceable study plan. For a planning horizon of the next seven days, it should prioritize the earliest deadlines, create useful tasks, reserve available study time, and save a plan that accurately reflects the actions its tools completed. This is a proposed objective and evaluation design; it is not an optimization algorithm implemented in the current code.</p>
+<h3>What counts as success?</h3>
+<p>Success has several dimensions. A plan might meet a deadline but contain vague tasks, or look complete while reserving time that is unavailable. I would evaluate the agent with the following weighted score, where each component ranges from 0 to 1:</p>
+<p><strong>Score = 0.40D + 0.30F + 0.20A + 0.10T</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Weight</th>
+<th>Proposed measurement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deadline coverage (D)</td>
+<td>40%</td>
+<td>Fraction of required work hours for assignments due within seven days that are scheduled before their deadlines; cap each assignment's coverage at 100% and average across due assignments.</td>
+</tr>
+<tr>
+<td>Feasibility (F)</td>
+<td>30%</td>
+<td>Fraction of proposed study blocks that fit inside available windows, have positive duration, and do not overlap another reservation.</td>
+</tr>
+<tr>
+<td>Actionability (A)</td>
+<td>20%</td>
+<td>Fraction of due assignments with a specific task, due date, and next step tied to the relevant course requirement.</td>
+</tr>
+<tr>
+<td>Traceability (T)</td>
+<td>10%</td>
+<td>Fraction of factual deadline/availability claims linked to a sensor result, and completion claims linked to a successful actuator result.</td>
+</tr>
+</tbody>
+</table>
+<p>For test cases with no due assignments, I would exclude D and A and renormalize the remaining weights. Empty or unnecessary schedules should not receive credit for completing work that does not exist.</p>
+<p><strong>Acceptance criteria.</strong> I would target a score of at least 0.90, subject to hard requirements: no overlapping or unavailable reservations, no invented deadlines, and no claim that a task or file was created unless the corresponding tool succeeded. A high weighted score cannot override these requirements. If there is insufficient time, the agent should explicitly report the unscheduled hours and propose a prioritization decision rather than pretend the plan is complete.</p>
+<p><strong>Why these weights?</strong> Deadline coverage gets the largest weight because the main purpose is to complete coursework on time. Feasibility comes next because a plan is useful only if I can follow it. Actionability turns broad intentions into concrete work. Traceability receives a smaller numerical weight, while truthful reporting remains mandatory, because I need to understand where the plan came from and trust its action reports.</p>
+<p><strong>How I would evaluate it.</strong> I would use small, hand-checked scenarios: sufficient free time, insufficient free time, overlapping candidate blocks, missing deadline information, and a simulated file-write failure. I would compare proposed tasks and reservations against the input data and actuator results. I would measure planning quality, not claim that the agent guarantees better grades. These tests and scores have not been run.</p>
+<p>The current prototype demonstrates the six tools and a single prioritized planning request. It does not yet implement the full seven-day objective, overlap checks across saved reservations, or this scoring framework. Those are proposed technical goals, as the assignment requests.</p>
+<h2>Question 2(c): Two additional functionalities</h2>
+<h3>1. Live course and calendar synchronization with adaptive replanning</h3>
+<p>I would connect the agent to the course learning-management system and my calendar so it can detect changed deadlines, new assignments, and changes in availability. Instead of relying on simulated inputs, it would refresh the relevant information and maintain a persistent plan. If an assignment changes or I miss a study block, it would identify the affected tasks, recalculate remaining work, and propose a revised schedule.</p>
+<p>I would want a preview of calendar changes before they are committed, conflict detection against existing reservations, and stable task identifiers so repeated runs do not create duplicate tasks. This is my first priority because maintaining an accurate plan over time is more useful than generating a one-time schedule. I would assess it by checking the time from a deadline change to a proposed revision, deadline coverage, scheduling conflicts, and duplicate records.</p>
+<h3>2. Evidence-linked literature discovery and study preparation</h3>
+<p>I would connect the agent to the RSS collection workflow from Question 1 and let it find readings relevant to upcoming assignments. It would filter candidates by their original publication dates, flag articles older than seven days for the weekly discussion, remove duplicate stories, and distinguish original reporting or research from commentary. For selected readings, it would prepare a short evidence-linked brief covering the main claim, supporting evidence, limitations, and connections to the course. It could then propose reading tasks and study blocks through the existing actuators.</p>
+<p>This would connect my literature-review habit with my coursework instead of maintaining two separate planning routines. It would support my own reading and writing rather than submit discussion posts for me. I would assess it by publication-date accuracy, relevance to the assignment, duplicate reduction, and whether each summary claim can be verified in the original source. Dates or claims that cannot be verified should be labeled uncertain instead of invented.</p>
+<h2>References</h2>
+<ul>
+<li><a href="https://developers.llamaindex.ai/python/framework/understanding/putting_it_all_together/agents/">LlamaIndex agents</a></li>
+<li><a href="https://ai.google.dev/gemini-api/docs/llama-index">Google Gemini with LlamaIndex</a></li>
+<li><a href="https://rssguard.readthedocs.io/en/stable/services/standard.html">RSS Guard: standard feeds and OPML import</a></li>
+</ul></body></html>
